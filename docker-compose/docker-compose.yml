@@ -9,5 +9,6 @@ services:
       - FEED_URL=https://rss.orf.at/news.xml
       - MESHTASTIC_HOST=10.14.0.3
       - MESHTASTIC_CH_INDEX=2
+      - SEND_DELAY=10
       - DEMOMODE=true
     restart: always

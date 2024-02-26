@@ -14,6 +14,7 @@ feed_url = os.getenv('FEED_URL')
 seen_entries_file = os.getenv('SEEN_ENTRIES_FILE', 'seen_entries.json')
 meshtastic_host = os.getenv('MESHTASTIC_HOST', '10.14.0.3')
 meshtastic_ch_index = os.getenv('MESHTASTIC_CH_INDEX', '0')
+send_delay = os.getenv('SEND_DELAY', '10')
 demo_mode = os.getenv('DEMOMODE', 'false').lower() == 'true'
 
 def load_seen_entries():
@@ -94,7 +95,7 @@ def _send_command(message, message_number):
             success = True  # Im Demomodus behandeln, als wäre die Nachricht erfolgreich gesendet worden.
 
         if not success or not demo_mode:
-            time.sleep(3)  # Warte 3 Sekunden vor dem nächsten Versuch oder nach erfolgreichem Senden
+            time.sleep(send_delay)  # Warte vor dem nächsten Versuch oder nach erfolgreichem Senden
 
 
 def split_message(message, max_size):
