@@ -33,7 +33,7 @@ Before you start using RSSTastic, ensure you have the following:
           - MESHTASTIC_CH_INDEX=2
           - SEND_DELAY=10
           - MAX_RETRY_ATTEMPTS=20
-          - DEMOMODE=true
+          - DEMOMODE=false
         restart: always
 
 2. Customize the `environment` variables in the `docker-compose.yml` file according to your Meshtastic network and RSS feed URL.
