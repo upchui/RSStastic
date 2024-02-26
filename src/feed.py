@@ -15,6 +15,7 @@ seen_entries_file = os.getenv('SEEN_ENTRIES_FILE', 'seen_entries.json')
 meshtastic_host = os.getenv('MESHTASTIC_HOST', '10.14.0.3')
 meshtastic_ch_index = os.getenv('MESHTASTIC_CH_INDEX', '0')
 send_delay = os.getenv('SEND_DELAY', '10')
+max_retry_attempts = int(os.getenv('MAX_RETRY_ATTEMPTS', '15'))
 demo_mode = os.getenv('DEMOMODE', 'false').lower() == 'true'
 
 def load_seen_entries():
@@ -59,44 +60,42 @@ def clean_html(html_content):
     return soup.get_text()
 
 def send_message(original_message, message_number):
-    """Sends a message, splitting it if necessary to comply with size restrictions."""
+    """Sends a message, splitting it if necessary to comply with size restrictions. Continues with next parts even if one part fails after max retry attempts."""
     max_size = 235
-    message_prefix_length = len(f"{message_number}: ")
-
-    if len(original_message.encode('utf-8')) + message_prefix_length <= max_size:
-        _send_command(f"{message_number}: {original_message}", message_number)
-        message_number += 1
-    else:
-        # Calculate the maximum length for the text portion of the message
-        max_text_length = max_size - message_prefix_length
-        parts = split_message(original_message, max_text_length)
-        for part in parts:
-            _send_command(f"{message_number}: {part}", message_number)
+    parts = split_message(original_message, max_size)
+    for part in parts:
+        message_with_number = f"{message_number}: {part}"
+        success = _send_command(message_with_number, message_number)
+        if success:
             message_number += 1
-
+        else:
+            logging.error(f"Skipping part {message_number} due to failure after max retries.")
+            message_number += 1  # Increment message_number even if sending fails to maintain sequence
     return message_number
 
 def _send_command(message, message_number):
-    """Executes the command to send a message, retrying on failure, with a 1-second cooldown between attempts."""
+    """Attempts to send a message up to a maximum number of retries. Returns True if successful, False otherwise."""
     success = False
     attempts = 0
-    while not success:
+    while not success and attempts < max_retry_attempts:
         if not demo_mode:
             command = f"meshtastic --host {meshtastic_host} --ch-index {meshtastic_ch_index} --sendtext '{message}'"
             try:
                 subprocess.run(command, shell=True, check=True)
                 logging.info(f"Message {message_number} sent successfully: {message}")
-                success = True
+                return True
             except subprocess.CalledProcessError:
                 attempts += 1
                 logging.warning(f"Error sending message {message_number}, attempt {attempts}. Retrying...")
         else:
             logging.info(f"Demo mode enabled, message {message_number} not sent: {message}")
-            success = True  # In demo mode, treat as if the message was sent successfully.
+            return True  # In demo mode, treat as if the message was sent successfully.
 
-        if not success or not demo_mode:
-            time.sleep(send_delay)  # Wait before retrying or after successful send
+        if not success:
+            time.sleep(send_delay)  # Wait before retrying
 
+    logging.error(f"Failed to send message {message_number} after {max_retry_attempts} attempts.")
+    return False  # Return False if unable to send after max attempts
 
 def split_message(message, max_size):
     """Splits a message into parts that are equal to or smaller than the maximum size."""
