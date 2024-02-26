@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  rsstastic:
+    image: thealhu/rsstastic:latest
+    volumes:
+      - ./data:/usr/src/app/data
+    environment:
+#      - FEED_URL=https://www.bmi.gv.at/rss/bmi_presse.xml
+      - FEED_URL=https://rss.orf.at/news.xml
+      - MESHTASTIC_HOST=10.14.0.3
+      - MESHTASTIC_CH_INDEX=2
+      - DEMOMODE=true
+    restart: always
