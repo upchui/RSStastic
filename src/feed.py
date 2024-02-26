@@ -17,7 +17,7 @@ feed_url = os.getenv('FEED_URL')
 seen_entries_file = os.getenv('SEEN_ENTRIES_FILE', 'seen_entries.json')
 meshtastic_host = os.getenv('MESHTASTIC_HOST', '10.14.0.3')
 meshtastic_ch_index = os.getenv('MESHTASTIC_CH_INDEX', '0')
-send_delay = os.getenv('SEND_DELAY', '10')
+send_delay = int(os.getenv('SEND_DELAY', '10'))
 max_retry_attempts = int(os.getenv('MAX_RETRY_ATTEMPTS', '15'))
 demo_mode = os.getenv('DEMOMODE', 'false').lower() == 'true'
 
