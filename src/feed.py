@@ -5,6 +5,9 @@ import os
 from bs4 import BeautifulSoup
 import logging
 import subprocess
+import random
+import time
+
 
 # Configure the logging system
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -137,5 +140,6 @@ else:
 
         save_seen_entries(seen_entries)
 
-        # Wait a while before checking the feed again
-        time.sleep(600)  # Wait for 10 minutes
+        # Wait a random while before checking the feed again
+        random_sleep_time = random.randint(5, 30) * 60
+        time.sleep(random_sleep_time)
